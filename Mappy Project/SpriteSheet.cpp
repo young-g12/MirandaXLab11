@@ -104,6 +104,8 @@ int Sprite::jumping(int jump, const int JUMPIT)
 	else
 	{
 		y -= jump/3; 
+		if (y < 0)
+			y = 0;
 		jump--; 
 		curFrame=0;
 	}
