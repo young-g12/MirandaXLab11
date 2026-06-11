@@ -1,6 +1,9 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_font.h>
+//#include <allegro5/allegro_ttf.h>
+#include <sstream>
 #include "SpriteSheet.h"
 #include "mappy_A5.h"
 #include <iostream>
@@ -10,6 +13,10 @@ int collided(int x, int y);  //Tile Collision
 bool endValue( int x, int y ); //End Block with the User Value = 8
 int main(void)
 {
+	bool levelComplete = false;
+	double startTime;
+	double finishTime = 0;
+	double endTimer = 0;
 	const int WIDTH = 900;
 	const int HEIGHT = 480;
 	bool keys[] = {false, false, false, false, false};
@@ -21,6 +28,7 @@ int main(void)
 	Sprite player;
 	const int JUMPIT=1600;
 	int jump = JUMPIT;
+	
 
 
 
@@ -33,6 +41,8 @@ int main(void)
 	if(!al_init())										//initialize Allegro
 		return -1;
 
+	startTime = al_get_time();
+
 	display = al_create_display(WIDTH, HEIGHT);			//create our display object
 
 	if(!display)										//test display object
@@ -42,8 +52,11 @@ int main(void)
 	al_install_keyboard();
 	al_init_image_addon();
 	al_init_primitives_addon();
+	al_init_font_addon();
+	//al_init_ttf_addon();
 
 	player.InitSprites(WIDTH,HEIGHT);
+	ALLEGRO_FONT* font = al_create_builtin_font();
 
 	int xOff = 0;
 	int yOff = 0;
@@ -82,8 +95,19 @@ int main(void)
 				player.UpdateSprites(WIDTH,HEIGHT,1);
 			else
 				player.UpdateSprites(WIDTH,HEIGHT,2);
-			if (player.CollisionEndBlock())
-				cout<<"Hit an End Block\n";
+			if (player.CollisionEndBlock() && !levelComplete)
+			{
+				levelComplete = true;
+				finishTime = al_get_time() - startTime;
+				endTimer = al_get_time();
+			}
+			if (levelComplete)
+			{
+				if (al_get_time() - endTimer >= 10)
+				{
+					done = true;
+				}
+			}
 			render = true;
 
 		}
@@ -165,12 +189,35 @@ int main(void)
 			MapDrawFG(xOff,yOff, 0, 0, WIDTH, HEIGHT, 0);
 			jump=player.jumping(jump,JUMPIT);
 			player.DrawSprites(xOff, yOff);
+			if (levelComplete)
+			{
+				al_draw_text(
+					font,
+					al_map_rgb(255, 255, 255),
+					WIDTH / 2,
+					100,
+					ALLEGRO_ALIGN_CENTER,
+					"LEVEL COMPLETE!"
+				);
+
+				string msg = "Time: " + to_string(finishTime) + " seconds";
+
+				al_draw_text(
+					font,
+					al_map_rgb(255, 255, 255),
+					WIDTH / 2,
+					130,
+					ALLEGRO_ALIGN_CENTER,
+					msg.c_str()
+				);
+			}
 			al_flip_display();
 			al_clear_to_color(al_map_rgb(0,0,0));
 		}
 	}
 	MapFreeMem();
 	al_destroy_event_queue(event_queue);
+	al_destroy_font(font);
 	al_destroy_display(display);						//destroy our display object
 
 	return 0;
