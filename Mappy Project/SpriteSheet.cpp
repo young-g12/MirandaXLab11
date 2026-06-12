@@ -22,6 +22,7 @@ void Sprite::InitSprites(int width, int height)
 	frameHeight = 64;
 	animationColumns = 8;
 	animationDirection = 1;
+	isJumping = false;
 
 	image = al_load_bitmap("guy.bmp");
 	al_convert_mask_to_alpha(image, al_map_rgb(255,0,255));
@@ -32,7 +33,7 @@ void Sprite::UpdateSprites(int width, int height, int dir)
 	int oldx = x;
 	int oldy = y;
 
-	if(dir == 1){ //right key
+	if (dir == 1 && !isJumping) { //right key
 		animationDirection = 1; 
 		x+=2; 
 		if (++frameCount > frameDelay)
@@ -41,7 +42,8 @@ void Sprite::UpdateSprites(int width, int height, int dir)
 			if (++curFrame > maxFrame)
 				curFrame=1;
 		}
-	} else if (dir == 0){ //left key
+	}
+	else if (dir == 0 && !isJumping) { //left key
 		animationDirection = 0; 
 		x-=2; 
 		if (++frameCount > frameDelay)
@@ -103,18 +105,27 @@ int Sprite::jumping(int jump, const int JUMPIT)
 	}
 	else
 	{
-		y -= jump/3; 
-		if (y < 0)
-			y = 0;
-		jump--; 
-		curFrame=0;
-	}
+		isJumping = true;
 
+		y -= jump / 3;
+		jump--;
+
+		if (jump > 20)
+			curFrame = 8;
+		else if (jump > 10)
+			curFrame = 9;
+		else if (jump > 0)
+			curFrame = 10;
+		else
+			curFrame = 11;
+	}
 	if (jump<0) 
 	{ 
 		if (collided(x + frameWidth/2,  y + frameHeight))
 		{ 
 			jump = JUMPIT; 
+			isJumping = false;
+			curFrame = 0;
 			while (collided(x + frameWidth/2,y + frameHeight))
 			{
 				y -= 3;
