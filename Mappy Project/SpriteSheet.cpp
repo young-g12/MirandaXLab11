@@ -66,10 +66,10 @@ void Sprite::UpdateSprites(int width, int height, int dir)
 	}
 	else if (animationDirection ==1)
 	{ 
-		if (collided(x + frameWidth, y + frameHeight)) { //collision detection to the right
-			x = oldx; 
-			y= oldy;
-		}
+		//if (collided(x + frameWidth, y + frameHeight)) { //collision detection to the right
+		//	x = oldx; 
+		//	y= oldy;
+		//}
 	}
 }
 
@@ -109,6 +109,11 @@ int Sprite::jumping(int jump, const int JUMPIT)
 
 		y -= jump / 3;
 		jump--;
+		if (y < 0)
+		{
+			y = 0;
+			jump = 0;
+		}
 
 		if (jump > 20)
 			curFrame = 8;
